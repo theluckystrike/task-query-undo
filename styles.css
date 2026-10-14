@@ -1,0 +1,34 @@
+.tqu-modal {
+ width: min(880px, 92vw);
+}
+
+.tqu-modal .tqu-record {
+ padding: var(--size-4-4);
+ margin-bottom: var(--size-4-4);
+ border: 1px solid var(--background-modifier-border);
+ border-radius: var(--radius-m);
+}
+
+.tqu-modal pre {
+ white-space: pre-wrap;
+ overflow-wrap: anywhere;
+ padding: var(--size-4-2);
+}
+
+.tqu-modal .tqu-before {
+ background: var(--background-secondary);
+}
+
+.tqu-modal .tqu-after {
+ border-left: 3px solid var(--interactive-accent);
+}
+
+.tqu-modal .tqu-label, .tqu-modal .tqu-path {
+ color: var(--text-muted);
+}
+
+.tqu-modal .tqu-result {
+ padding: var(--size-4-3);
+ background: var(--background-secondary);
+ border-radius: var(--radius-s);
+}

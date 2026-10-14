@@ -1,0 +1,957 @@
+{
+ "slug": "task-query-undo",
+ "module": "task-query-undo/src/engine",
+ "function": "detect",
+ "cases": [
+  {
+   "name": "AC01 One completed task",
+   "function": "detect",
+   "args": [
+    "Header\n- [ ] Pay rent\nFooter\n\nNotes",
+    "Header\n- [x] Pay rent\nFooter\n\nNotes"
+   ],
+   "expected": {
+    "before": "- [ ] Pay rent",
+    "after": "- [x] Pay rent",
+    "previous": "Header",
+    "next": "Footer"
+   }
+  },
+  {
+   "name": "AC01 Restore only the checkbox",
+   "function": "restoreText",
+   "args": [
+    "Header\n- [x] Pay rent\nFooter\n\nNotes",
+    {
+     "id": "1",
+     "path": "Tasks/Rent.md",
+     "folder": "Tasks",
+     "time": 1000,
+     "before": "- [ ] Pay rent",
+     "after": "- [x] Pay rent",
+     "previous": "Header",
+     "next": "Footer"
+    }
+   ],
+   "expected": "Header\n- [ ] Pay rent\nFooter\n\nNotes"
+  },
+  {
+   "name": "AC02 Checkbox and done date",
+   "function": "detect",
+   "args": [
+    "Header\n- [ ] Pay rent\nFooter\n\nNotes",
+    "Header\n- [x] Pay rent ✅ 2026-10-14\nFooter\n\nNotes"
+   ],
+   "expected": {
+    "before": "- [ ] Pay rent",
+    "after": "- [x] Pay rent ✅ 2026-10-14",
+    "previous": "Header",
+    "next": "Footer"
+   }
+  },
+  {
+   "name": "AC02 Remove the done date",
+   "function": "restoreText",
+   "args": [
+    "Header\n- [x] Pay rent ✅ 2026-10-14\nFooter\n\nNotes",
+    {
+     "id": "1",
+     "path": "Tasks/Rent.md",
+     "folder": "Tasks",
+     "time": 1000,
+     "before": "- [ ] Pay rent",
+     "after": "- [x] Pay rent ✅ 2026-10-14",
+     "previous": "Header",
+     "next": "Footer"
+    }
+   ],
+   "expected": "Header\n- [ ] Pay rent\nFooter\n\nNotes"
+  },
+  {
+   "name": "AC03 Keep a later paragraph",
+   "function": "restoreText",
+   "args": [
+    "Header\n- [x] Pay rent\nFooter\n\nNotes\n\nLater paragraph.",
+    {
+     "id": "1",
+     "path": "Tasks/Rent.md",
+     "folder": "Tasks",
+     "time": 1000,
+     "before": "- [ ] Pay rent",
+     "after": "- [x] Pay rent",
+     "previous": "Header",
+     "next": "Footer"
+    }
+   ],
+   "expected": "Header\n- [ ] Pay rent\nFooter\n\nNotes\n\nLater paragraph."
+  },
+  {
+   "name": "AC04 Task text is stale",
+   "function": "restoreText",
+   "args": [
+    "Header\n- [x] Pay May rent\nFooter\n\nNotes",
+    {
+     "id": "1",
+     "path": "Tasks/Rent.md",
+     "folder": "Tasks",
+     "time": 1000,
+     "before": "- [ ] Pay rent",
+     "after": "- [x] Pay rent",
+     "previous": "Header",
+     "next": "Footer"
+    }
+   ],
+   "expected": {
+    "error": "Restore refused: the line or its context changed."
+   }
+  },
+  {
+   "name": "AC05 Ambiguous context",
+   "function": "restoreText",
+   "args": [
+    "Header\n- [x] Pay rent\nFooter\n\nNotes\nHeader\n- [x] Pay rent\nFooter",
+    {
+     "id": "1",
+     "path": "Tasks/Rent.md",
+     "folder": "Tasks",
+     "time": 1000,
+     "before": "- [ ] Pay rent",
+     "after": "- [x] Pay rent",
+     "previous": "Header",
+     "next": "Footer"
+    }
+   ],
+   "expected": {
+    "error": "Restore refused: more than one line matches."
+   }
+  },
+  {
+   "name": "AC06 Recurrence inserts a task",
+   "function": "detect",
+   "args": [
+    "Header\n- [ ] Pay rent\nFooter\n\nNotes",
+    "Header\n- [x] Pay rent\nFooter\n\nNotes\n- [ ] Pay rent 🔁 every month"
+   ],
+   "expected": null
+  },
+  {
+   "name": "AC06 Recurrence marker",
+   "function": "detect",
+   "args": [
+    "Header\n- [ ] Pay rent 🔁 every month\nFooter\n\nNotes",
+    "Header\n- [x] Pay rent 🔁 every month\nFooter\n\nNotes"
+   ],
+   "expected": null
+  },
+  {
+   "name": "AC07 Two completed lines",
+   "function": "detect",
+   "args": [
+    "- [ ] A\n- [ ] B",
+    "- [x] A\n- [x] B"
+   ],
+   "expected": null
+  },
+  {
+   "name": "AC07 Checkbox and prose",
+   "function": "detect",
+   "args": [
+    "Header\n- [ ] Pay rent\nFooter\n\nNotes",
+    "Header\n- [x] Pay rent\nFooter\n\nChanged notes"
+   ],
+   "expected": null
+  },
+  {
+   "name": "AC08 Frontmatter",
+   "function": "detect",
+   "args": [
+    "---\n- [ ] Pay rent\n---",
+    "---\n- [x] Pay rent\n---"
+   ],
+   "expected": null
+  },
+  {
+   "name": "AC08 Backtick fence",
+   "function": "detect",
+   "args": [
+    "```tasks\n- [ ] Pay rent\n```",
+    "```tasks\n- [x] Pay rent\n```"
+   ],
+   "expected": null
+  },
+  {
+   "name": "AC08 Tilde fence",
+   "function": "detect",
+   "args": [
+    "~~~\n- [ ] Pay rent\n~~~",
+    "~~~\n- [x] Pay rent\n~~~"
+   ],
+   "expected": null
+  },
+  {
+   "name": "AC09 Free history keeps the last ten",
+   "function": "trimHistory",
+   "args": [
+    [
+     {
+      "id": "0",
+      "path": "Tasks/Rent.md",
+      "folder": "Tasks",
+      "time": 0,
+      "before": "- [ ] Pay rent",
+      "after": "- [x] Pay rent",
+      "previous": "Header",
+      "next": "Footer"
+     },
+     {
+      "id": "1",
+      "path": "Tasks/Rent.md",
+      "folder": "Tasks",
+      "time": 1,
+      "before": "- [ ] Pay rent",
+      "after": "- [x] Pay rent",
+      "previous": "Header",
+      "next": "Footer"
+     },
+     {
+      "id": "2",
+      "path": "Tasks/Rent.md",
+      "folder": "Tasks",
+      "time": 2,
+      "before": "- [ ] Pay rent",
+      "after": "- [x] Pay rent",
+      "previous": "Header",
+      "next": "Footer"
+     },
+     {
+      "id": "3",
+      "path": "Tasks/Rent.md",
+      "folder": "Tasks",
+      "time": 3,
+      "before": "- [ ] Pay rent",
+      "after": "- [x] Pay rent",
+      "previous": "Header",
+      "next": "Footer"
+     },
+     {
+      "id": "4",
+      "path": "Tasks/Rent.md",
+      "folder": "Tasks",
+      "time": 4,
+      "before": "- [ ] Pay rent",
+      "after": "- [x] Pay rent",
+      "previous": "Header",
+      "next": "Footer"
+     },
+     {
+      "id": "5",
+      "path": "Tasks/Rent.md",
+      "folder": "Tasks",
+      "time": 5,
+      "before": "- [ ] Pay rent",
+      "after": "- [x] Pay rent",
+      "previous": "Header",
+      "next": "Footer"
+     },
+     {
+      "id": "6",
+      "path": "Tasks/Rent.md",
+      "folder": "Tasks",
+      "time": 6,
+      "before": "- [ ] Pay rent",
+      "after": "- [x] Pay rent",
+      "previous": "Header",
+      "next": "Footer"
+     },
+     {
+      "id": "7",
+      "path": "Tasks/Rent.md",
+      "folder": "Tasks",
+      "time": 7,
+      "before": "- [ ] Pay rent",
+      "after": "- [x] Pay rent",
+      "previous": "Header",
+      "next": "Footer"
+     },
+     {
+      "id": "8",
+      "path": "Tasks/Rent.md",
+      "folder": "Tasks",
+      "time": 8,
+      "before": "- [ ] Pay rent",
+      "after": "- [x] Pay rent",
+      "previous": "Header",
+      "next": "Footer"
+     },
+     {
+      "id": "9",
+      "path": "Tasks/Rent.md",
+      "folder": "Tasks",
+      "time": 9,
+      "before": "- [ ] Pay rent",
+      "after": "- [x] Pay rent",
+      "previous": "Header",
+      "next": "Footer"
+     },
+     {
+      "id": "10",
+      "path": "Tasks/Rent.md",
+      "folder": "Tasks",
+      "time": 10,
+      "before": "- [ ] Pay rent",
+      "after": "- [x] Pay rent",
+      "previous": "Header",
+      "next": "Footer"
+     }
+    ],
+    false
+   ],
+   "expected": [
+    {
+     "id": "1",
+     "path": "Tasks/Rent.md",
+     "folder": "Tasks",
+     "time": 1,
+     "before": "- [ ] Pay rent",
+     "after": "- [x] Pay rent",
+     "previous": "Header",
+     "next": "Footer"
+    },
+    {
+     "id": "2",
+     "path": "Tasks/Rent.md",
+     "folder": "Tasks",
+     "time": 2,
+     "before": "- [ ] Pay rent",
+     "after": "- [x] Pay rent",
+     "previous": "Header",
+     "next": "Footer"
+    },
+    {
+     "id": "3",
+     "path": "Tasks/Rent.md",
+     "folder": "Tasks",
+     "time": 3,
+     "before": "- [ ] Pay rent",
+     "after": "- [x] Pay rent",
+     "previous": "Header",
+     "next": "Footer"
+    },
+    {
+     "id": "4",
+     "path": "Tasks/Rent.md",
+     "folder": "Tasks",
+     "time": 4,
+     "before": "- [ ] Pay rent",
+     "after": "- [x] Pay rent",
+     "previous": "Header",
+     "next": "Footer"
+    },
+    {
+     "id": "5",
+     "path": "Tasks/Rent.md",
+     "folder": "Tasks",
+     "time": 5,
+     "before": "- [ ] Pay rent",
+     "after": "- [x] Pay rent",
+     "previous": "Header",
+     "next": "Footer"
+    },
+    {
+     "id": "6",
+     "path": "Tasks/Rent.md",
+     "folder": "Tasks",
+     "time": 6,
+     "before": "- [ ] Pay rent",
+     "after": "- [x] Pay rent",
+     "previous": "Header",
+     "next": "Footer"
+    },
+    {
+     "id": "7",
+     "path": "Tasks/Rent.md",
+     "folder": "Tasks",
+     "time": 7,
+     "before": "- [ ] Pay rent",
+     "after": "- [x] Pay rent",
+     "previous": "Header",
+     "next": "Footer"
+    },
+    {
+     "id": "8",
+     "path": "Tasks/Rent.md",
+     "folder": "Tasks",
+     "time": 8,
+     "before": "- [ ] Pay rent",
+     "after": "- [x] Pay rent",
+     "previous": "Header",
+     "next": "Footer"
+    },
+    {
+     "id": "9",
+     "path": "Tasks/Rent.md",
+     "folder": "Tasks",
+     "time": 9,
+     "before": "- [ ] Pay rent",
+     "after": "- [x] Pay rent",
+     "previous": "Header",
+     "next": "Footer"
+    },
+    {
+     "id": "10",
+     "path": "Tasks/Rent.md",
+     "folder": "Tasks",
+     "time": 10,
+     "before": "- [ ] Pay rent",
+     "after": "- [x] Pay rent",
+     "previous": "Header",
+     "next": "Footer"
+    }
+   ]
+  },
+  {
+   "name": "AC09 Free reload starts with no history",
+   "function": "loadHistory",
+   "args": [
+    null
+   ],
+   "expected": []
+  },
+  {
+   "name": "AC10 Previous context is stale",
+   "function": "restoreText",
+   "args": [
+    "New header\n- [x] Pay rent\nFooter\n\nNotes",
+    {
+     "id": "1",
+     "path": "Tasks/Rent.md",
+     "folder": "Tasks",
+     "time": 1000,
+     "before": "- [ ] Pay rent",
+     "after": "- [x] Pay rent",
+     "previous": "Header",
+     "next": "Footer"
+    }
+   ],
+   "expected": {
+    "error": "Restore refused: the line or its context changed."
+   }
+  },
+  {
+   "name": "AC11 Next context is stale",
+   "function": "restoreText",
+   "args": [
+    "Header\n- [x] Pay rent\nNew footer\n\nNotes",
+    {
+     "id": "1",
+     "path": "Tasks/Rent.md",
+     "folder": "Tasks",
+     "time": 1000,
+     "before": "- [ ] Pay rent",
+     "after": "- [x] Pay rent",
+     "previous": "Header",
+     "next": "Footer"
+    }
+   ],
+   "expected": {
+    "error": "Restore refused: the line or its context changed."
+   }
+  },
+  {
+   "name": "AC12 Uppercase checked marker",
+   "function": "detect",
+   "args": [
+    "Header\n- [ ] Pay rent\nFooter\n\nNotes",
+    "Header\n- [X] Pay rent\nFooter\n\nNotes"
+   ],
+   "expected": {
+    "before": "- [ ] Pay rent",
+    "after": "- [X] Pay rent",
+    "previous": "Header",
+    "next": "Footer"
+   }
+  },
+  {
+   "name": "AC13 CRLF is kept",
+   "function": "detect",
+   "args": [
+    "Header\r\n- [ ] Pay rent\r\nFooter\r\n\r\nNotes",
+    "Header\r\n- [x] Pay rent\r\nFooter\r\n\r\nNotes"
+   ],
+   "expected": {
+    "before": "- [ ] Pay rent\r",
+    "after": "- [x] Pay rent\r",
+    "previous": "Header\r",
+    "next": "Footer\r"
+   }
+  },
+  {
+   "name": "AC14 No change",
+   "function": "detect",
+   "args": [
+    "Header\n- [ ] Pay rent\nFooter\n\nNotes",
+    "Header\n- [ ] Pay rent\nFooter\n\nNotes"
+   ],
+   "expected": null
+  },
+  {
+   "name": "AC15 Indented code",
+   "function": "detect",
+   "args": [
+    "    - [ ] Pay rent",
+    "    - [x] Pay rent"
+   ],
+   "expected": null
+  },
+  {
+   "name": "AC16 Custom status",
+   "function": "detect",
+   "args": [
+    "- [ ] Pay rent",
+    "- [-] Pay rent"
+   ],
+   "expected": null
+  },
+  {
+   "name": "AC17 Text also changes",
+   "function": "detect",
+   "args": [
+    "Header\n- [ ] Pay rent\nFooter\n\nNotes",
+    "Header\n- [x] Pay May rent\nFooter\n\nNotes"
+   ],
+   "expected": null
+  },
+  {
+   "name": "AC18 Deleted line",
+   "function": "detect",
+   "args": [
+    "Header\n- [ ] Pay rent\nFooter\n\nNotes",
+    "Header\nFooter\n\nNotes"
+   ],
+   "expected": null
+  },
+  {
+   "name": "AC19 Bullet variant",
+   "function": "detect",
+   "args": [
+    "* [ ] Pay rent",
+    "* [x] Pay rent"
+   ],
+   "expected": {
+    "before": "* [ ] Pay rent",
+    "after": "* [x] Pay rent",
+    "previous": null,
+    "next": null
+   }
+  },
+  {
+   "name": "AC20 Added line elsewhere",
+   "function": "detect",
+   "args": [
+    "Header\n- [ ] Pay rent\nFooter\n\nNotes",
+    "Header\n- [x] Pay rent\nFooter\n\nNotes\nNew text"
+   ],
+   "expected": null
+  },
+  {
+   "name": "AC21 Shifted task with intact context",
+   "function": "restoreText",
+   "args": [
+    "Intro\n\nHeader\n- [x] Pay rent\nFooter\n\nNotes",
+    {
+     "id": "1",
+     "path": "Tasks/Rent.md",
+     "folder": "Tasks",
+     "time": 1000,
+     "before": "- [ ] Pay rent",
+     "after": "- [x] Pay rent",
+     "previous": "Header",
+     "next": "Footer"
+    }
+   ],
+   "expected": "Intro\n\nHeader\n- [ ] Pay rent\nFooter\n\nNotes"
+  },
+  {
+   "name": "AC22 Pro retains eleven records",
+   "function": "trimHistory",
+   "args": [
+    [
+     {
+      "id": "0",
+      "path": "Tasks/Rent.md",
+      "folder": "Tasks",
+      "time": 0,
+      "before": "- [ ] Pay rent",
+      "after": "- [x] Pay rent",
+      "previous": "Header",
+      "next": "Footer"
+     },
+     {
+      "id": "1",
+      "path": "Tasks/Rent.md",
+      "folder": "Tasks",
+      "time": 1,
+      "before": "- [ ] Pay rent",
+      "after": "- [x] Pay rent",
+      "previous": "Header",
+      "next": "Footer"
+     },
+     {
+      "id": "2",
+      "path": "Tasks/Rent.md",
+      "folder": "Tasks",
+      "time": 2,
+      "before": "- [ ] Pay rent",
+      "after": "- [x] Pay rent",
+      "previous": "Header",
+      "next": "Footer"
+     },
+     {
+      "id": "3",
+      "path": "Tasks/Rent.md",
+      "folder": "Tasks",
+      "time": 3,
+      "before": "- [ ] Pay rent",
+      "after": "- [x] Pay rent",
+      "previous": "Header",
+      "next": "Footer"
+     },
+     {
+      "id": "4",
+      "path": "Tasks/Rent.md",
+      "folder": "Tasks",
+      "time": 4,
+      "before": "- [ ] Pay rent",
+      "after": "- [x] Pay rent",
+      "previous": "Header",
+      "next": "Footer"
+     },
+     {
+      "id": "5",
+      "path": "Tasks/Rent.md",
+      "folder": "Tasks",
+      "time": 5,
+      "before": "- [ ] Pay rent",
+      "after": "- [x] Pay rent",
+      "previous": "Header",
+      "next": "Footer"
+     },
+     {
+      "id": "6",
+      "path": "Tasks/Rent.md",
+      "folder": "Tasks",
+      "time": 6,
+      "before": "- [ ] Pay rent",
+      "after": "- [x] Pay rent",
+      "previous": "Header",
+      "next": "Footer"
+     },
+     {
+      "id": "7",
+      "path": "Tasks/Rent.md",
+      "folder": "Tasks",
+      "time": 7,
+      "before": "- [ ] Pay rent",
+      "after": "- [x] Pay rent",
+      "previous": "Header",
+      "next": "Footer"
+     },
+     {
+      "id": "8",
+      "path": "Tasks/Rent.md",
+      "folder": "Tasks",
+      "time": 8,
+      "before": "- [ ] Pay rent",
+      "after": "- [x] Pay rent",
+      "previous": "Header",
+      "next": "Footer"
+     },
+     {
+      "id": "9",
+      "path": "Tasks/Rent.md",
+      "folder": "Tasks",
+      "time": 9,
+      "before": "- [ ] Pay rent",
+      "after": "- [x] Pay rent",
+      "previous": "Header",
+      "next": "Footer"
+     },
+     {
+      "id": "10",
+      "path": "Tasks/Rent.md",
+      "folder": "Tasks",
+      "time": 10,
+      "before": "- [ ] Pay rent",
+      "after": "- [x] Pay rent",
+      "previous": "Header",
+      "next": "Footer"
+     }
+    ],
+    true
+   ],
+   "expected": [
+    {
+     "id": "0",
+     "path": "Tasks/Rent.md",
+     "folder": "Tasks",
+     "time": 0,
+     "before": "- [ ] Pay rent",
+     "after": "- [x] Pay rent",
+     "previous": "Header",
+     "next": "Footer"
+    },
+    {
+     "id": "1",
+     "path": "Tasks/Rent.md",
+     "folder": "Tasks",
+     "time": 1,
+     "before": "- [ ] Pay rent",
+     "after": "- [x] Pay rent",
+     "previous": "Header",
+     "next": "Footer"
+    },
+    {
+     "id": "2",
+     "path": "Tasks/Rent.md",
+     "folder": "Tasks",
+     "time": 2,
+     "before": "- [ ] Pay rent",
+     "after": "- [x] Pay rent",
+     "previous": "Header",
+     "next": "Footer"
+    },
+    {
+     "id": "3",
+     "path": "Tasks/Rent.md",
+     "folder": "Tasks",
+     "time": 3,
+     "before": "- [ ] Pay rent",
+     "after": "- [x] Pay rent",
+     "previous": "Header",
+     "next": "Footer"
+    },
+    {
+     "id": "4",
+     "path": "Tasks/Rent.md",
+     "folder": "Tasks",
+     "time": 4,
+     "before": "- [ ] Pay rent",
+     "after": "- [x] Pay rent",
+     "previous": "Header",
+     "next": "Footer"
+    },
+    {
+     "id": "5",
+     "path": "Tasks/Rent.md",
+     "folder": "Tasks",
+     "time": 5,
+     "before": "- [ ] Pay rent",
+     "after": "- [x] Pay rent",
+     "previous": "Header",
+     "next": "Footer"
+    },
+    {
+     "id": "6",
+     "path": "Tasks/Rent.md",
+     "folder": "Tasks",
+     "time": 6,
+     "before": "- [ ] Pay rent",
+     "after": "- [x] Pay rent",
+     "previous": "Header",
+     "next": "Footer"
+    },
+    {
+     "id": "7",
+     "path": "Tasks/Rent.md",
+     "folder": "Tasks",
+     "time": 7,
+     "before": "- [ ] Pay rent",
+     "after": "- [x] Pay rent",
+     "previous": "Header",
+     "next": "Footer"
+    },
+    {
+     "id": "8",
+     "path": "Tasks/Rent.md",
+     "folder": "Tasks",
+     "time": 8,
+     "before": "- [ ] Pay rent",
+     "after": "- [x] Pay rent",
+     "previous": "Header",
+     "next": "Footer"
+    },
+    {
+     "id": "9",
+     "path": "Tasks/Rent.md",
+     "folder": "Tasks",
+     "time": 9,
+     "before": "- [ ] Pay rent",
+     "after": "- [x] Pay rent",
+     "previous": "Header",
+     "next": "Footer"
+    },
+    {
+     "id": "10",
+     "path": "Tasks/Rent.md",
+     "folder": "Tasks",
+     "time": 10,
+     "before": "- [ ] Pay rent",
+     "after": "- [x] Pay rent",
+     "previous": "Header",
+     "next": "Footer"
+    }
+   ]
+  },
+  {
+   "name": "AC23 Pro history can reload",
+   "function": "loadHistory",
+   "args": [
+    [
+     {
+      "id": "1",
+      "path": "Tasks/Rent.md",
+      "folder": "Tasks",
+      "time": 1000,
+      "before": "- [ ] Pay rent",
+      "after": "- [x] Pay rent",
+      "previous": "Header",
+      "next": "Footer"
+     }
+    ]
+   ],
+   "expected": [
+    {
+     "id": "1",
+     "path": "Tasks/Rent.md",
+     "folder": "Tasks",
+     "time": 1000,
+     "before": "- [ ] Pay rent",
+     "after": "- [x] Pay rent",
+     "previous": "Header",
+     "next": "Footer"
+    }
+   ]
+  },
+  {
+   "name": "AC24 Malformed local history",
+   "function": "loadHistory",
+   "args": [
+    [
+     {
+      "id": "bad"
+     },
+     {
+      "id": "1",
+      "path": "Tasks/Rent.md",
+      "folder": "Tasks",
+      "time": 1000,
+      "before": "- [ ] Pay rent",
+      "after": "- [x] Pay rent",
+      "previous": "Header",
+      "next": "Footer"
+     }
+    ]
+   ],
+   "expected": [
+    {
+     "id": "1",
+     "path": "Tasks/Rent.md",
+     "folder": "Tasks",
+     "time": 1000,
+     "before": "- [ ] Pay rent",
+     "after": "- [x] Pay rent",
+     "previous": "Header",
+     "next": "Footer"
+    }
+   ]
+  },
+  {
+   "name": "AC25 Frontmatter with a byte order mark",
+   "function": "detect",
+   "args": [
+    "﻿---\n- [ ] Pay rent\n---",
+    "﻿---\n- [x] Pay rent\n---"
+   ],
+   "expected": null
+  },
+  {
+   "name": "AC26 A longer fence is still open",
+   "function": "detect",
+   "args": [
+    "````\n```\n- [ ] Pay rent\n````",
+    "````\n```\n- [x] Pay rent\n````"
+   ],
+   "expected": null
+  },
+  {
+   "name": "AC27 New fence around the stored task",
+   "function": "restoreText",
+   "args": [
+    "```\nHeader\n- [x] Pay rent\nFooter\n\nNotes\n```",
+    {
+     "id": "1",
+     "path": "Tasks/Rent.md",
+     "folder": "Tasks",
+     "time": 1000,
+     "before": "- [ ] Pay rent",
+     "after": "- [x] Pay rent",
+     "previous": "Header",
+     "next": "Footer"
+    }
+   ],
+   "expected": {
+    "error": "Restore refused: this line is no longer an eligible task."
+   }
+  },
+  {
+   "name": "AC28 Task text contains an uppercase checkbox",
+   "function": "detect",
+   "args": [
+    "- [ ] Explain [X]",
+    "- [x] Explain [X]"
+   ],
+   "expected": {
+    "before": "- [ ] Explain [X]",
+    "after": "- [x] Explain [X]",
+    "previous": null,
+    "next": null
+   }
+  },
+  {
+   "name": "AC29 Folder boundary",
+   "function": "inFolder",
+   "args": [
+    "Tasks-extra/A.md",
+    "Tasks"
+   ],
+   "expected": false
+  },
+  {
+   "name": "AC30 Subfolder is selected",
+   "function": "inFolder",
+   "args": [
+    "Tasks/Home/A.md",
+    "Tasks"
+   ],
+   "expected": true
+  },
+  {
+   "name": "AC31 Empty folder stops tracking",
+   "function": "inFolder",
+   "args": [
+    "Tasks/A.md",
+    ""
+   ],
+   "expected": false
+  },
+  {
+   "name": "AC32 Dataview recurrence field",
+   "function": "detect",
+   "args": [
+    "- [ ] Pay rent [repeat:: monthly]",
+    "- [x] Pay rent [repeat:: monthly]"
+   ],
+   "expected": null
+  }
+ ]
+}

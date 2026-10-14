@@ -1,0 +1,63 @@
+[
+  {
+    "feature": "watch-folder",
+    "caption": "The selected folder has a baseline and one observed completion.",
+    "note": "Tasks/Finance.md",
+    "eval": "(async () => {const p = app.plugins.plugins['task-query-undo']; for (const m of [...p.modals]) m.close(); p.pro.signOut(); await p.flush(); await p.clearHistory(); const f = app.vault.getFileByPath('Task Query Undo/Tasks/Finance.md'); await app.vault.modify(f, \"# Finance review\\n\\n## Home\\n- [ ] Pay rent\\nRent is due on Friday.\\n\\n## Work\\n- [ ] Check invoice\\nCompare the invoice with the order.\\n\\n## Weekly review\\n- [ ] Send report\\nRead the report before sending it.\\n\\n## Journal\\nKeep the later planning notes here.\\n\"); await p.selectFolder('Task Query Undo/Tasks');await app.vault.process(f, text => text.replace('- [ ] Pay rent', '- [x] Pay rent ✅ 2026-10-14')); await p.observe(f);p.showHistory();document.querySelectorAll('.notice').forEach(n => n.remove()); return 'ok';})()",
+    "wait": 400
+  },
+  {
+    "feature": "history",
+    "caption": "Review the old and new lines for two task completions.",
+    "note": "Tasks/Finance.md",
+    "eval": "(async () => {const p = app.plugins.plugins['task-query-undo']; for (const m of [...p.modals]) m.close(); p.pro.signOut(); await p.flush(); await p.clearHistory(); const f = app.vault.getFileByPath('Task Query Undo/Tasks/Finance.md'); await app.vault.modify(f, \"# Finance review\\n\\n## Home\\n- [ ] Pay rent\\nRent is due on Friday.\\n\\n## Work\\n- [ ] Check invoice\\nCompare the invoice with the order.\\n\\n## Weekly review\\n- [ ] Send report\\nRead the report before sending it.\\n\\n## Journal\\nKeep the later planning notes here.\\n\"); await p.selectFolder('Task Query Undo/Tasks');await app.vault.process(f, text => text.replace('- [ ] Pay rent', '- [x] Pay rent ✅ 2026-10-14')); await p.observe(f);await app.vault.process(f, text => text.replace('- [ ] Check invoice','- [x] Check invoice')); await p.observe(f);p.showHistory();document.querySelectorAll('.notice').forEach(n => n.remove()); return 'ok';})()",
+    "wait": 400
+  },
+  {
+    "feature": "restore",
+    "caption": "Restore the checkbox and keep a later journal paragraph.",
+    "note": "Tasks/Finance.md",
+    "eval": "(async () => {const p = app.plugins.plugins['task-query-undo']; for (const m of [...p.modals]) m.close(); p.pro.signOut(); await p.flush(); await p.clearHistory(); const f = app.vault.getFileByPath('Task Query Undo/Tasks/Finance.md'); await app.vault.modify(f, \"# Finance review\\n\\n## Home\\n- [ ] Pay rent\\nRent is due on Friday.\\n\\n## Work\\n- [ ] Check invoice\\nCompare the invoice with the order.\\n\\n## Weekly review\\n- [ ] Send report\\nRead the report before sending it.\\n\\n## Journal\\nKeep the later planning notes here.\\n\"); await p.selectFolder('Task Query Undo/Tasks');await app.vault.process(f, text => text.replace('- [ ] Pay rent', '- [x] Pay rent ✅ 2026-10-14')); await p.observe(f);await app.vault.process(f, text => text.replace('- [ ] Check invoice', '- [x] Check invoice')); await p.observe(f); await app.vault.process(f, text => text + '\\nLater paragraph: book the room for Monday.\\n'); await p.observe(f); const result = await p.restore(p.history[0].id); await app.workspace.getLeaf(false).openFile(f); document.querySelectorAll('.notice').forEach(n => n.remove()); return result; })()",
+    "wait": 400
+  },
+  {
+    "feature": "refusal",
+    "caption": "A later task text edit makes the recovery record stale.",
+    "note": "Tasks/Finance.md",
+    "eval": "(async () => {const p = app.plugins.plugins['task-query-undo']; for (const m of [...p.modals]) m.close(); p.pro.signOut(); await p.flush(); await p.clearHistory(); const f = app.vault.getFileByPath('Task Query Undo/Tasks/Finance.md'); await app.vault.modify(f, \"# Finance review\\n\\n## Home\\n- [ ] Pay rent\\nRent is due on Friday.\\n\\n## Work\\n- [ ] Check invoice\\nCompare the invoice with the order.\\n\\n## Weekly review\\n- [ ] Send report\\nRead the report before sending it.\\n\\n## Journal\\nKeep the later planning notes here.\\n\"); await p.selectFolder('Task Query Undo/Tasks');await app.vault.process(f, text => text.replace('- [ ] Pay rent', '- [x] Pay rent ✅ 2026-10-14')); await p.observe(f);await app.vault.process(f, text => text.replace('Pay rent ✅','Pay May rent ✅')); await p.observe(f); const result = await p.restore(p.history[0].id); p.showHistory(); const m = [...p.modals][0]; m.message = result; m.render();document.querySelectorAll('.notice').forEach(n => n.remove()); return 'ok';})()",
+    "wait": 400
+  },
+  {
+    "feature": "pro-history",
+    "caption": "Pro keeps eleven observed records on this device.",
+    "note": "Tasks/Finance.md",
+    "eval": "(async () => {const p = app.plugins.plugins['task-query-undo']; for (const m of [...p.modals]) m.close(); p.pro.signOut(); await p.flush(); await p.clearHistory(); const f = app.vault.getFileByPath('Task Query Undo/Tasks/Finance.md'); await app.vault.modify(f, \"# Finance review\\n\\n## Home\\n- [ ] Pay rent\\nRent is due on Friday.\\n\\n## Work\\n- [ ] Check invoice\\nCompare the invoice with the order.\\n\\n## Weekly review\\n- [ ] Send report\\nRead the report before sending it.\\n\\n## Journal\\nKeep the later planning notes here.\\n\"); await p.selectFolder('Task Query Undo/Tasks');p.pro.opts.http = async () => ({status:200,json:{data:{viewer:{login:'demo-reader'},user:{sponsorshipForViewerAsSponsor:{isActive:true,isOneTimePayment:false,tier:{name:'$5 a month',monthlyPriceInCents:500}}}}}}); app.secretStorage.setSecret('task-query-undo-github-token','gho_'+'0'.repeat(36)); await p.pro.refreshNow();for (let i=0;i<11;i++) { await app.vault.modify(f, \"# Finance review\\n\\n## Home\\n- [ ] Pay rent\\nRent is due on Friday.\\n\\n## Work\\n- [ ] Check invoice\\nCompare the invoice with the order.\\n\\n## Weekly review\\n- [ ] Send report\\nRead the report before sending it.\\n\\n## Journal\\nKeep the later planning notes here.\\n\"); await p.observe(f); await app.vault.process(f, text => text.replace('- [ ] Pay rent', '- [x] Pay rent ✅ 2026-10-14')); await p.observe(f); }p.showHistory();const m = [...p.modals][0]; m.message = p.history.length + ' recovery records are stored on this device.'; m.render();document.querySelectorAll('.notice').forEach(n => n.remove()); return 'ok';})()",
+    "wait": 400
+  },
+  {
+    "feature": "profiles",
+    "caption": "A saved folder profile includes a history filter.",
+    "note": "Tasks/Finance.md",
+    "eval": "(async () => {const p = app.plugins.plugins['task-query-undo']; for (const m of [...p.modals]) m.close(); p.pro.signOut(); await p.flush(); await p.clearHistory(); const f = app.vault.getFileByPath('Task Query Undo/Tasks/Finance.md'); await app.vault.modify(f, \"# Finance review\\n\\n## Home\\n- [ ] Pay rent\\nRent is due on Friday.\\n\\n## Work\\n- [ ] Check invoice\\nCompare the invoice with the order.\\n\\n## Weekly review\\n- [ ] Send report\\nRead the report before sending it.\\n\\n## Journal\\nKeep the later planning notes here.\\n\"); await p.selectFolder('Task Query Undo/Tasks');p.pro.opts.http = async () => ({status:200,json:{data:{viewer:{login:'demo-reader'},user:{sponsorshipForViewerAsSponsor:{isActive:true,isOneTimePayment:false,tier:{name:'$5 a month',monthlyPriceInCents:500}}}}}}); app.secretStorage.setSecret('task-query-undo-github-token','gho_'+'0'.repeat(36)); await p.pro.refreshNow();await app.vault.process(f, text => text.replace('- [ ] Pay rent', '- [x] Pay rent ✅ 2026-10-14')); await p.observe(f);p.settings.filter = 'rent'; await p.saveProfile('Finance review');p.showHistory();document.querySelectorAll('.notice').forEach(n => n.remove()); return 'ok';})()",
+    "wait": 400
+  },
+  {
+    "feature": "task-query-undo",
+    "caption": "Review a completion, add a later paragraph, and restore one task line.",
+    "frames": [
+      {
+        "note": "Tasks/Finance.md",
+        "eval": "(async () => {const p = app.plugins.plugins['task-query-undo']; for (const m of [...p.modals]) m.close(); p.pro.signOut(); await p.flush(); await p.clearHistory(); const f = app.vault.getFileByPath('Task Query Undo/Tasks/Finance.md'); await app.vault.modify(f, \"# Finance review\\n\\n## Home\\n- [ ] Pay rent\\nRent is due on Friday.\\n\\n## Work\\n- [ ] Check invoice\\nCompare the invoice with the order.\\n\\n## Weekly review\\n- [ ] Send report\\nRead the report before sending it.\\n\\n## Journal\\nKeep the later planning notes here.\\n\"); await p.selectFolder('Task Query Undo/Tasks');await app.vault.process(f, text => text.replace('- [ ] Pay rent', '- [x] Pay rent ✅ 2026-10-14')); await p.observe(f);p.showHistory();document.querySelectorAll('.notice').forEach(n => n.remove()); return 'ok';})()",
+        "hold": 1600
+      },
+      {
+        "eval": "(async () => { const p=app.plugins.plugins['task-query-undo']; const f=app.vault.getFileByPath('Task Query Undo/Tasks/Finance.md'); await app.vault.process(f,t=>t+'\\nLater paragraph: book the room for Monday.\\n'); await p.observe(f); const m=[...p.modals][0]; m.message='A later paragraph was added. The task and its context still match.'; m.render(); return 'ok'; })()",
+        "hold": 1600
+      },
+      {
+        "eval": "(async () => { const p=app.plugins.plugins['task-query-undo']; const result=await p.restore(p.history[0].id); for(const m of [...p.modals]) m.close(); await app.workspace.getLeaf(false).openFile(app.vault.getFileByPath('Task Query Undo/Tasks/Finance.md')); return result; })()",
+        "hold": 2200
+      }
+    ]
+  }
+]
